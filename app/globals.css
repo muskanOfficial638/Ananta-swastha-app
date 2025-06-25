@@ -1,0 +1,403 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  /* Brand Colors */
+  --primary-brown: #815C42;
+  --primary-green: #334036;
+  --primary-cream: #D7D0C0;
+  
+  /* Secondary Colors */
+  --secondary-beige: #C4B99F;
+  --secondary-white: #FFFFFF;
+  --secondary-gray: #BBC3C6;
+  --secondary-tan: #C7AF95;
+  --secondary-olive: #ABB087;
+  
+  /* Base colors */
+  --background: var(--secondary-white);
+  --foreground: var(--primary-green);
+
+  --primary-color: #815C42;
+  --secondary-color: #334036;
+  --accent-color: #ABB087;
+  --background-light: #F7F5EF;
+  --text-color: #334036;
+}
+
+/* Theme Variables */
+:root {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--primary-green);
+    --foreground: var(--primary-cream);
+  }
+}
+
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  scroll-behavior: smooth;
+  color: var(--text-color);
+  background-color: #FFFFFF;
+}
+
+/* Button Styles */
+.btn-primary {
+  background-color: var(--primary-brown);
+  color: var(--secondary-white);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #6e4f39;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(129, 92, 66, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-beige);
+  color: var(--primary-green);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #b3a992;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(196, 185, 159, 0.2);
+  background-color: #9a9e78;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary-green);
+  border: 2px solid var(--primary-green);
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background-color: var(--primary-green);
+  color: var(--secondary-white);
+  transform: translateY(-2px);
+}
+
+/* Section Styles */
+.section {
+  padding: 4rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: 6rem 2rem;
+  }
+}
+
+/* Card Styles */
+.card {
+  background-color: var(--secondary-white);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Animated Background */
+.animated-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.animated-bg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 10% 20%, rgba(216, 241, 230, 0.6) 0%, rgba(233, 226, 226, 0.4) 90.1%);
+  filter: blur(50px);
+  z-index: 0;
+  animation: pulse 15s ease infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+    filter: blur(30px);
+  }
+  50% {
+    opacity: 0.9;
+    filter: blur(45px);
+  }
+  100% {
+    opacity: 0.7;
+    filter: blur(30px);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary-cream); 
+  background: #f1f1f1;
+}
+ 
+::-webkit-scrollbar-thumb {
+  background: var(--primary-brown); 
+  border-radius: 5px;
+  background: var(--primary-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6e4f39; 
+}
+
+/* Animation Classes */
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out forwards;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Glass Effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Dosha Page Styles */
+.dosha-card {
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.dosha-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Feature Highlight */
+.feature-highlight {
+  position: relative;
+  z-index: 1;
+}
+
+.feature-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30%;
+  background-color: rgba(171, 176, 135, 0.3);
+  z-index: -1;
+  border-radius: 4px;
+}
+
+/* Enhanced Mesh Gradients */
+.mesh-gradient-primary {
+  background: 
+    radial-gradient(circle at 15% 30%, rgba(209, 198, 176, 0.8) 0%, transparent 55%),
+    radial-gradient(circle at 85% 20%, rgba(171, 176, 135, 0.6) 0%, transparent 60%),
+    radial-gradient(circle at 75% 80%, rgba(129, 92, 66, 0.5) 0%, transparent 55%),
+    radial-gradient(circle at 25% 70%, rgba(51, 64, 54, 0.4) 0%, transparent 50%);
+  filter: blur(40px);
+}
+
+.mesh-gradient-secondary {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(129, 92, 66, 0.7) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(171, 176, 135, 0.6) 0%, transparent 55%);
+  filter: blur(60px);
+}
+
+.soft-shadow {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.01);
+}
+
+/* Carousel utilities */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.snap-center {
+  scroll-snap-align: center;
+}
+
+/* Add momentum scrolling for iOS devices */
+@supports (-webkit-overflow-scrolling: touch) {
+  .mobile-carousel {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 640px) {
+  .mobile-hero-text h1 {
+    font-size: 2.25rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  .mobile-hero-text p {
+    font-size: 1.125rem !important;
+  }
+}
+
+/* Modern Design Utilities */
+.glass-effect {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary-brown), var(--secondary-beige));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for mobile carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Enhanced Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Modern Card Hover Effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Enhanced Focus States */
+.focus-ring:focus {
+  outline: 2px solid var(--primary-brown);
+  outline-offset: 2px;
+}
+
+/* Modern Button Styles */
+.btn-modern {
+  position: relative;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-modern:hover::before {
+  left: 100%;
+}
+
+/* Improved Typography */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Modern Spacing */
+.space-y-16 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 4rem;
+}
+
+.space-y-20 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 5rem;
+}
+
+.space-y-24 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 6rem;
+}

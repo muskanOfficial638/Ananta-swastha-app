@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+        let socket;
+        let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MzA1MTM5M2I0OTljYWQ0NjY1NTE3ZCIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzQ3OTk2OTk0LCJleHAiOjE3NDgwODMzOTR9.shStGFaEj6ZfGUHZjMPKgY-gX3t6YACIXCpZlRj4utY"; // Replace with your JWT token
+        
+        function connect() {
+            socket = io('http://localhost:5000', {
+                auth: {
+                    token: token
+                }
+            });
+            
+            socket.on('connect', () => {
+                document.getElementById('status').textContent = 'Connected';
+                console.log('Connected to server');
+            });
+            
+            socket.on('error', (error) => {
+                document.getElementById('status').textContent = 'Error: ' + error.message;
+                console.error('Socket error:', error);
+            });
+            
+            socket.on('chat:message:receive', (message) => {
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML += `<p><strong>${message.senderInfo.name}:</strong> ${message.content}</p>`;
+                console.log('Received message:', message);
+            });
+            
+            socket.on('call:request', (data) => {
+                const callsDiv = document.getElementById('calls');
+                callsDiv.innerHTML += `<p>Call request from ${data.callerInfo.name} (${data.callType})</p>`;
+                console.log('Call request:', data);
+            });
+        }
+        
+        function sendMessage() {
+            const conversationId = document.getElementById('conversationId').value;
+            const receiverId = document.getElementById('receiverId').value;
+            const content = document.getElementById('messageContent').value;
+            
+            socket.emit('chat:message:send', {
+                conversationId: conversationId,
+                receiverId: receiverId,
+                content: content,
+                messageType: 'text'
+            });
+            
+            document.getElementById('messageContent').value = '';
+        }
+        
+        function initiateCall() {
+            const receiverId = document.getElementById('callReceiverId').value;
+            const callType = document.getElementById('callType').value;
+            
+            socket.emit('call:request', {
+                receiverId: receiverId,
+                callType: callType,
+                callRoomId: 'test-room-' + Date.now()
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Socket.IO Test Client</h1>
+    <div>
+        <p>Status: <span id="status">Disconnected</span></p>
+        <button onclick="connect()">Connect</button>
+    </div>
+    
+    <hr>
+    
+    <h2>Chat Test</h2>
+    <div>
+        <p>Conversation ID: <input type="text" id="conversationId"></p>
+        <p>Receiver ID: <input type="text" id="receiverId"></p>
+        <p>Message: <input type="text" id="messageContent"></p>
+        <button onclick="sendMessage()">Send Message</button>
+    </div>
+    
+    <div id="messages" style="border: 1px solid #ccc; padding: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto;">
+        <!-- Messages will appear here -->
+    </div>
+    
+    <hr>
+    
+    <h2>Call Test</h2>
+    <div>
+        <p>Receiver ID: <input type="text" id="callReceiverId"></p>
+        <p>Call Type: 
+            <select id="callType">
+                <option value="audio">Audio Call</option>
+                <option value="video">Video Call</option>
+            </select>
+        </p>
+        <button onclick="initiateCall()">Initiate Call</button>
+    </div>
+    
+    <div id="calls" style="border: 1px solid #ccc; padding: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto;">
+        <!-- Call events will appear here -->
+    </div>
+</body>
+</html>

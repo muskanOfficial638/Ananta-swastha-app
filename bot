@@ -1,0 +1,558 @@
+import { useState, useEffect, useRef } from "react";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  SafeAreaView,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Animated,
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
+import { useDosha } from "../context/DoshaContext";
+import { useRouter } from "expo-router";
+
+export default function BotScreen() {
+  const router = useRouter();
+  const { currentDosha } = useDosha();
+  const [message, setMessage] = useState("");
+  const [chatHistory, setChatHistory] = useState([
+    { id: 1, text: "Hello! I'm your Ayurvedic assistant. I can help with natural remedies and wellness advice based on Ayurvedic principles. How can I assist you today?", isUser: false, showOptions: false },
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  
+  // Animation for typing dots
+  const typingDotAnim1 = useRef(new Animated.Value(0.4)).current;
+  const typingDotAnim2 = useRef(new Animated.Value(0.4)).current;
+  const typingDotAnim3 = useRef(new Animated.Value(0.4)).current;
+  
+  // Refs to store timeout IDs for cleanup
+  const thinkingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSendTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  const suggestedQuestions = [
+    "How can I improve my digestion?",
+    "Remedies for stress and anxiety?",
+    "Ayurvedic solutions for skin problems?",
+    "Help with joint pain and arthritis",
+    "Tips for better sleep and insomnia",
+    "Natural ways for weight management",
+    "Remedies for cold and cough",
+    "How to treat headaches naturally?",
+    "Ayurvedic care for hair health",
+    "Herbs for managing blood pressure"
+  ];
+
+  // Animation function for typing dots - speed up the animation further
+  const animateTypingDots = () => {
+    // Reset animations
+    typingDotAnim1.setValue(0.4);
+    typingDotAnim2.setValue(0.4);
+    typingDotAnim3.setValue(0.4);
+    
+    // Sequence of animations for dots - further reduced durations to 150ms
+    animationRef.current = Animated.sequence([
+      // First dot
+      Animated.timing(typingDotAnim1, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true
+      }),
+      // Second dot
+      Animated.timing(typingDotAnim2, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true
+      }),
+      // Third dot
+      Animated.timing(typingDotAnim3, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true
+      })
+    ]);
+    
+    animationRef.current.start((finished) => {
+      // Loop the animation if still typing and if the animation completed normally
+      if (isTyping && finished) {
+        animateTypingDots();
+      }
+    });
+  };
+
+  // Start typing animation when isTyping changes
+  useEffect(() => {
+    if (isTyping) {
+      animateTypingDots();
+    } else {
+      // Stop animation when not typing
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+    }
+    
+    // Cleanup function to stop animation when component unmounts or isTyping changes
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+    };
+  }, [isTyping]);
+
+  // Clean up all timeouts and states when component unmounts or screen loses focus
+  useEffect(() => {
+    // Add a forced timeout to ensure we don't get stuck in thinking or typing states
+    const safetyTimeout = setTimeout(() => {
+      if (isThinking || isTyping) {
+        console.log("Safety timeout triggered - resetting states");
+        setIsThinking(false);
+        setIsTyping(false);
+      }
+    }, 10000); // 10 seconds safety timeout
+    
+    return () => {
+      // Clear all timeouts
+      if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
+      if (autoSendTimeoutRef.current) clearTimeout(autoSendTimeoutRef.current);
+      clearTimeout(safetyTimeout);
+      
+      // Stop any running animations
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+      
+      // Reset states
+      setIsThinking(false);
+      setIsTyping(false);
+    };
+  }, []);
+
+  const handleSendMessage = () => {
+    if (message.trim() === "") return;
+    
+    // Reset any existing timeouts to prevent state conflicts
+    if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
+    
+    // Reset states in case we were already in thinking or typing state
+    setIsThinking(false);
+    setIsTyping(false);
+    
+    // Add user message to chat
+    const userMessage = message.trim();
+    setChatHistory(prev => [...prev, { id: prev.length + 1, text: userMessage, isUser: true, showOptions: false }]);
+    setMessage(""); // Clear input field immediately
+    
+    // Shortened thinking/typing sequence with proper state transitions
+    setTimeout(() => {
+      setIsThinking(true);
+      
+      thinkingTimeoutRef.current = setTimeout(() => {
+        setIsThinking(false);
+        setIsTyping(true);
+        
+        typingTimeoutRef.current = setTimeout(() => {
+          // Generate response based on user query
+          let response = "";
+          let showOptions = false;
+          const lowercaseMsg = userMessage.toLowerCase();
+          
+          if (lowercaseMsg.includes("digest") || lowercaseMsg.includes("bloat") || lowercaseMsg.includes("constipation")) {
+            response = "𝗗𝗶𝗴𝗲𝘀𝘁𝗶𝘃𝗲 𝗛𝗲𝗮𝗹𝘁𝗵\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nIndigestion, bloating, constipation\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Triphala (1/2 tsp) with warm water before bed\n• Ginger Tea: Fresh ginger slices boiled in water\n• Herbs: Ajwain, cumin, and fennel to enhance digestion\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Drink luke warm water throughout the day\n• Avoid heavy meals before bedtime";
+          } else if (lowercaseMsg.includes("stress") || lowercaseMsg.includes("anxiety") || lowercaseMsg.includes("mental")) {
+            response = "𝗦𝘁𝗿𝗲𝘀𝘀 & 𝗔𝗻𝘅𝗶𝗲𝘁𝘆\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nStress, anxiety, mental fatigue\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Ashwagandha (500 mg twice daily)\n• Brahmi or Jatamansi for calming the mind\n• Pranayama: Daily breathing exercises like Anulom Vilom\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Practice meditation for 10-15 minutes daily\n• Try tulsi tea before bed";
+          } else if (lowercaseMsg.includes("skin") || lowercaseMsg.includes("acne") || lowercaseMsg.includes("eczema")) {
+            response = "𝗦𝗸𝗶𝗻 𝗛𝗲𝗮𝗹𝘁𝗵\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nAcne, eczema, dry skin\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Neem + Turmeric Paste for acne\n• Aloe Vera Gel for skin hydration and soothing\n• Manjistha Powder to purify blood and enhance skin glow\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Drink water with lemon in the morning\n• Avoid excessive oily foods";
+          } else if (lowercaseMsg.includes("joint") || lowercaseMsg.includes("arthritis") || lowercaseMsg.includes("pain")) {
+            response = "𝗝𝗼𝗶𝗻𝘁 𝗣𝗮𝗶𝗻\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nArthritis, joint inflammation\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Turmeric & Ginger Tea for inflammation\n• Sesame Oil Massage: Warm oil massage to relieve stiffness\n• Shallaki (Boswellia) for reducing joint pain\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Keep the affected area warm and avoid cold exposure\n• Maintain a moderate exercise routine";
+          } else if (lowercaseMsg.includes("sleep") || lowercaseMsg.includes("insomnia")) {
+            response = "𝗜𝗻𝘀𝗼𝗺𝗻𝗶𝗮\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nTrouble sleeping, poor sleep quality\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Warm Milk + Nutmeg before bed\n• Ashwagandha for calming\n• Herbal Tea for relaxation\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Reduce screen time before bed\n• Practice light stretching or yoga";
+          } else if (lowercaseMsg.includes("weight") || lowercaseMsg.includes("obesity") || lowercaseMsg.includes("fat")) {
+            response = "𝗪𝗲𝗶𝗴𝗵𝘁 𝗠𝗮𝗻𝗮𝗴𝗲𝗺𝗲𝗻𝘁\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nWeight loss, obesity\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Lemon + Ginger Water in the morning for metabolism\n• Triphala to improve digestion and metabolism\n• Guggulu to manage weight\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Eat smaller, balanced meals throughout the day\n• Regular physical activity";
+          } else if (lowercaseMsg.includes("cold") || lowercaseMsg.includes("cough") || lowercaseMsg.includes("throat")) {
+            response = "𝗖𝗼𝗹𝗱 & 𝗖𝗼𝘂𝗴𝗵\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nCommon cold, cough, sore throat\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Honey + Ginger Juice for soothing throat\n• Tulsi Tea for immunity and respiratory support\n• Licorice Root for cough relief\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Stay hydrated with warm fluids\n• Avoid cold foods and drinks";
+          } else if (lowercaseMsg.includes("headache") || lowercaseMsg.includes("migraine")) {
+            response = "𝗛𝗲𝗮𝗱𝗮𝗰𝗵𝗲/𝗠𝗶𝗴𝗿𝗮𝗶𝗻𝗲\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nHeadache, migraine\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Brahmi or Ashwagandha for stress-related headaches\n• Diluted Peppermint Oil massage on the temples\n• Cold Compress with sandalwood paste for relief\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Stay in a quiet, dark room\n• Stay hydrated throughout the day";
+          } else if (lowercaseMsg.includes("hair") || lowercaseMsg.includes("dandruff") || lowercaseMsg.includes("bald")) {
+            response = "𝗛𝗮𝗶𝗿 𝗛𝗲𝗮𝗹𝘁𝗵\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nHair fall, dandruff, dryness\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Amla Powder for strengthening hair\n• Bhringraj Oil massage for hair growth\n• Henna for scalp nourishment\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Avoid excessive heat or chemical treatments\n• Use natural oils for conditioning";
+          } else if (lowercaseMsg.includes("blood pressure") || lowercaseMsg.includes("hypertension")) {
+            response = "𝗛𝘆𝗽𝗲𝗿𝘁𝗲𝗻𝘀𝗶𝗼𝗻\n\n𝗣𝗿𝗼𝗯𝗹𝗲𝗺:\nHigh blood pressure\n\n𝗔𝘆𝘂𝗿𝘃𝗲𝗱𝗶𝗰 𝗦𝗼𝗹𝘂𝘁𝗶𝗼𝗻:\n• Ashwagandha for stress-related hypertension\n• Arjuna Bark Powder for heart health\n• Garlic or Tulsi for reducing blood pressure\n\n𝗔𝗱𝗱𝗶𝘁𝗶𝗼𝗻𝗮𝗹 𝗧𝗶𝗽𝘀:\n• Practice yoga to lower stress\n• Monitor salt intake and maintain a balanced diet";
+          } else if (lowercaseMsg.includes("dosha") || lowercaseMsg.includes("vata") || lowercaseMsg.includes("pitta") || lowercaseMsg.includes("kapha")) {
+            response = "In Ayurveda, your body constitution or 'dosha' guides your wellness plan. The three doshas are Vata (air/space), Pitta (fire/water), and Kapha (earth/water). Your assessment shows your primary dosha is " + (currentDosha?.primaryDosha || "not yet determined") + ". Each dosha benefits from specific diets, routines, and remedies. Would you like to know more about your dosha type?";
+          } else {
+            response = "I'm not able to provide specific advice for this query. For personalized guidance, you may want to consult with a qualified Ayurvedic practitioner.";
+            showOptions = true; // Show the option buttons for this response
+          }
+          
+          // Reset typing state before adding response
+          setIsTyping(false);
+          
+          // Add response to chat history
+          setTimeout(() => {
+            setChatHistory(prev => [...prev, { 
+              id: prev.length + 1, 
+              text: response, 
+              isUser: false, 
+              showOptions: showOptions 
+            }]);
+          }, 50);
+          
+        }, 700); // Slightly longer typing time for realism
+      }, 500); // Thinking time 
+    }, 100);
+  };
+
+  const handleSuggestedQuestion = (question: string) => {
+    setMessage(question);
+    // Auto-send the question after a short delay
+    autoSendTimeoutRef.current = setTimeout(() => handleSendMessage(), 100);
+  };
+
+  const handleChatWithAgent = () => {
+    // Add a system message to show the user their request has been registered
+    setChatHistory(prev => [
+      ...prev, 
+      { 
+        id: prev.length + 1, 
+        text: "We've registered your request to speak with a human Ayurvedic expert. One of our specialists will connect with you shortly. In the meantime, feel free to continue asking other questions.", 
+        isUser: false,
+        showOptions: false
+      }
+    ]);
+  };
+
+  // Scroll to bottom of chat when new messages appear
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [chatHistory, isThinking, isTyping]);
+
+  return (
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
+      <StatusBar style="dark" />
+      <SafeAreaView style={{ flex: 0, backgroundColor: "#FFFFFF" }} />
+      
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>AI Health Assistant</Text>
+      </View>
+      
+      <ScrollView 
+        style={styles.chatContainer}
+        contentContainerStyle={styles.chatContent}
+        ref={scrollViewRef}
+      >
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.suggestedQuestionsContainer}
+          contentContainerStyle={styles.suggestedQuestionsContent}
+        >
+          {suggestedQuestions.map((question, index) => (
+            <TouchableOpacity 
+              key={index} 
+              style={styles.questionChip}
+              onPress={() => handleSuggestedQuestion(question)}
+            >
+              <Text style={styles.questionChipText}>{question}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+        
+        {chatHistory.map((msg) => (
+          <View 
+            key={msg.id} 
+            style={[
+              styles.messageBubble, 
+              msg.isUser ? styles.userBubble : styles.aiBubble
+            ]}
+          >
+            {msg.isUser ? (
+              <Text style={styles.messageText}>{msg.text}</Text>
+            ) : (
+              <View>
+                <Text style={styles.messageText}>
+                  {msg.text.split(/(\d+\))/).map((part, index) => {
+                    // If the part matches a numbered item like "1)", format it differently
+                    if (/^\d+\)$/.test(part)) {
+                      return (
+                        <Text key={index} style={styles.messageListNumber}>
+                          {"\n"}{part}{" "}
+                        </Text>
+                      );
+                    }
+                    return part;
+                  })}
+                </Text>
+                
+                {msg.showOptions && (
+                  <View style={styles.optionsContainer}>
+                    <TouchableOpacity 
+                      style={styles.optionButton}
+                    >
+                      <FontAwesome name="user-md" size={16} color="#8B664B" style={styles.optionIcon} />
+                      <Text style={styles.optionText}>Consult a Doctor</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={styles.optionButton}
+                      onPress={handleChatWithAgent}
+                    >
+                      <FontAwesome name="headphones" size={16} color="#8B664B" style={styles.optionIcon} />
+                      <Text style={styles.optionText}>Chat with Expert</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
+            {!msg.isUser && (
+              <View style={styles.aiMessageFooter}>
+                <Text style={styles.aiFooterText}>Ananta Svastha AI</Text>
+              </View>
+            )}
+          </View>
+        ))}
+        
+        {isThinking && (
+          <View style={[styles.messageBubble, styles.aiBubble]}>
+            <Text style={styles.thinkingText}>Searching for information...</Text>
+          </View>
+        )}
+        
+        {isTyping && !isThinking && (
+          <View style={[styles.messageBubble, styles.aiBubble, styles.typingBubble]}>
+            <View style={styles.typingIndicator}>
+              <Animated.View style={[styles.typingDot, { opacity: typingDotAnim1 }]} />
+              <Animated.View style={[styles.typingDot, { opacity: typingDotAnim2 }]} />
+              <Animated.View style={[styles.typingDot, { opacity: typingDotAnim3 }]} />
+            </View>
+          </View>
+        )}
+      </ScrollView>
+      
+      <View style={styles.inputContainer}>
+        {(isTyping || isThinking) ? (
+          <TouchableOpacity 
+            style={styles.stopGeneratingButton}
+            onPress={() => {
+              // Clear all timeouts
+              if (thinkingTimeoutRef.current) clearTimeout(thinkingTimeoutRef.current);
+              if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+              if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
+              
+              setIsTyping(false);
+              setIsThinking(false);
+            }}
+          >
+            <Text style={styles.stopGeneratingText}>Stop generating</Text>
+          </TouchableOpacity>
+        ) : (
+          <>
+            <TextInput
+              style={styles.input}
+              value={message}
+              onChangeText={setMessage}
+              placeholder="Type your health question..."
+              placeholderTextColor="#8B664B80"
+              multiline
+            />
+            <TouchableOpacity 
+              style={[styles.sendButton, message.trim() === "" && styles.sendButtonDisabled]} 
+              onPress={handleSendMessage}
+              disabled={message.trim() === ""}
+            >
+              <Ionicons name="send" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  header: {
+    paddingTop: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+    backgroundColor: "#FFFFFF",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#334036",
+    textAlign: "center",
+  },
+  chatContainer: {
+    flex: 1,
+  },
+  chatContent: {
+    padding: 16,
+    paddingBottom: 30,
+  },
+  suggestedQuestionsContainer: {
+    marginBottom: 20,
+  },
+  suggestedQuestionsContent: {
+    paddingVertical: 5,
+  },
+  questionChip: {
+    backgroundColor: '#F4EFEA',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#E0D5CB',
+  },
+  questionChipText: {
+    color: '#8B664B',
+    fontSize: 14,
+  },
+  messageBubble: {
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 16,
+    maxWidth: '85%',
+  },
+  userBubble: {
+    backgroundColor: '#E8EDE9',
+    alignSelf: 'flex-end',
+    borderBottomRightRadius: 4,
+  },
+  aiBubble: {
+    backgroundColor: '#F4EFEA',
+    alignSelf: 'flex-start',
+    borderBottomLeftRadius: 4,
+  },
+  messageText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#334036",
+  },
+  messageListNumber: {
+    fontWeight: "600",
+    color: "#8B664B",
+  },
+  typingBubble: {
+    padding: 10,
+    width: 70,
+  },
+  typingIndicator: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 20,
+  },
+  typingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#8B664B',
+    marginHorizontal: 2,
+  },
+  thinkingText: {
+    color: '#8B664B',
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  aiMessageFooter: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+  },
+  aiFooterText: {
+    fontSize: 11,
+    color: '#8B664B',
+    fontStyle: 'italic',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+    backgroundColor: "#FFFFFF",
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    maxHeight: 100,
+    color: '#334036',
+  },
+  sendButton: {
+    backgroundColor: '#334036',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#CCCCCC',
+  },
+  stopGeneratingButton: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  stopGeneratingText: {
+    color: '#8B664B',
+    fontWeight: '600',
+  },
+  optionsContainer: {
+    marginTop: 12,
+    flexDirection: 'column',
+    gap: 8,
+  },
+  optionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F7F2ED',
+    borderWidth: 1,
+    borderColor: '#E0D5CB',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  optionIcon: {
+    marginRight: 8,
+  },
+  optionText: {
+    color: '#8B664B',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});

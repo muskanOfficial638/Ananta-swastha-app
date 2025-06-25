@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Herb/Plant Icon -->
+  <circle cx="100" cy="100" r="95" fill="#F7F5EF" stroke="#C7AF95" stroke-width="2"/>
+  
+  <!-- Stem -->
+  <path d="M100,180 L100,100" stroke="#334036" stroke-width="3" fill="none"/>
+  
+  <!-- Leaves -->
+  <path d="M100,120 C80,110 60,130 70,150 C80,160 90,150 100,140" fill="#ABB087"/>
+  <path d="M100,120 C120,110 140,130 130,150 C120,160 110,150 100,140" fill="#ABB087"/>
+  
+  <path d="M100,100 C80,90 60,110 70,130 C80,140 90,130 100,120" fill="#ABB087"/>
+  <path d="M100,100 C120,90 140,110 130,130 C120,140 110,130 100,120" fill="#ABB087"/>
+  
+  <path d="M100,80 C80,70 60,90 70,110 C80,120 90,110 100,100" fill="#ABB087"/>
+  <path d="M100,80 C120,70 140,90 130,110 C120,120 110,110 100,100" fill="#ABB087"/>
+  
+  <!-- Flower -->
+  <circle cx="100" cy="60" r="15" fill="#815C42" opacity="0.8"/>
+  <circle cx="85" cy="50" r="8" fill="#D7D0C0"/>
+  <circle cx="115" cy="50" r="8" fill="#D7D0C0"/>
+  <circle cx="85" cy="70" r="8" fill="#D7D0C0"/>
+  <circle cx="115" cy="70" r="8" fill="#D7D0C0"/>
+  <circle cx="100" cy="40" r="8" fill="#D7D0C0"/>
+  <circle cx="100" cy="80" r="8" fill="#D7D0C0"/>
+  <circle cx="100" cy="60" r="6" fill="#C7AF95"/>
+</svg>
