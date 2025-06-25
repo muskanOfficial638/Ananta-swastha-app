@@ -1,0 +1,43 @@
+name: Deploy via Password SSH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: environment-variables
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+          
+      # - name: Install Dependencies
+      #   run: npm install --legacy-peer-deps
+
+      #- name: Build Project
+       # run: NODE_OPTIONS=--openssl-legacy-provider npm run build
+
+      - name: Deploy with SSH and Password
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            echo "Deploying project..."
+            cd /var/www/anantasvastha.com/html
+            echo "Cleaning working directory to allow git pull..."
+            git pull origin main
+            # npm install --production
+            npm run build
+            pm2 restart all
+            pm2 save
