@@ -62,7 +62,7 @@ const Navbar = () => {
               alt="Ananta Svastha" 
               width={120} 
               height={40} 
-              className="h-11 w-auto"
+              className="h-20 w-auto"
               priority
             />
           </Link>
@@ -71,7 +71,7 @@ const Navbar = () => {
             <NavLink href="/doshas">Doshas</NavLink>
             <NavLink href="/doctors">Doctors</NavLink>
             <NavLink href="/appointment">Book Appointment</NavLink>
-            <NavLink href="/bot">AI Assistant</NavLink>
+            <NavLink href="#">AI Assistant</NavLink>
             <NavLink href="/blog">Blog</NavLink>
             <NavLink href="/news">News</NavLink>
             <Link 

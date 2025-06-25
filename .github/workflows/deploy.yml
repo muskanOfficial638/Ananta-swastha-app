@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: environment-variables
+    # environment: environment-variables
 
     steps:
       - name: Checkout Code
@@ -19,12 +19,14 @@ jobs:
         with:
           node-version: 22
 
-          
+      - name: Echo Host
+        run: echo "${{ secrets.SERVER_HOST || 'missing' }}"
+
       # - name: Install Dependencies
       #   run: npm install --legacy-peer-deps
 
       #- name: Build Project
-       # run: NODE_OPTIONS=--openssl-legacy-provider npm run build
+      # run: NODE_OPTIONS=--openssl-legacy-provider npm run build
 
       - name: Deploy with SSH and Password
         uses: appleboy/ssh-action@v1.0.0
