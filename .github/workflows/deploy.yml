@@ -36,7 +36,7 @@ jobs:
             cd /var/www/anantasvastha.com/html
             echo "Cleaning working directory to allow git pull..."
             git pull origin main
-            npm install --production
+            npm install
             npm run build
             pm2 restart all
             pm2 save
